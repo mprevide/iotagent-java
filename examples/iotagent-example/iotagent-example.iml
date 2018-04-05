@@ -12,6 +12,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Maven: log4j:log4j:1.2.17" level="project" />
+    <orderEntry type="library" name="Maven: com.github.tprimini:iotagent-java-bkp:eae6538" level="project" />
     <orderEntry type="library" name="Maven: org.apache.kafka:kafka-clients:1.0.1" level="project" />
     <orderEntry type="library" name="Maven: org.lz4:lz4-java:1.4" level="project" />
     <orderEntry type="library" name="Maven: org.xerial.snappy:snappy-java:1.1.4" level="project" />
@@ -25,10 +26,6 @@
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore-nio:4.3.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpmime:4.3.6" level="project" />
     <orderEntry type="library" name="Maven: org.json:json:20140107" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.12" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.hamcrest:hamcrest-core:1.3" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: commons-io:commons-io:2.4" level="project" />
     <orderEntry type="library" name="Maven: com.github.ben-manes.caffeine:caffeine:2.6.2" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: com.github.stefanbirkner:system-rules:1.17.1" level="project" />
   </component>
 </module>
