@@ -1,5 +1,6 @@
 package br.com.dojot.kafka;
 
+import br.com.dojot.auth.Auth;
 import br.com.dojot.config.Config;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -12,6 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.apache.log4j.Logger;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,15 +26,17 @@ public class Manager {
     private Map<String, Thread> mConsumers;
     private Cache<String, JSONObject> mCache;
     private Map<String, List<Function<JSONObject, Integer>>> mCallbacks;
+    private Producer mProducer;
 
     public Manager() {
         this.mCache = Caffeine.newBuilder()
-                .expireAfterWrite(1, TimeUnit.MINUTES)
+                .expireAfterAccess(1, TimeUnit.MINUTES)
                 .build();
 
         mCallbacks = new HashMap<>();
 
         this.initConsumer();
+        this.initProducer();
     }
 
     public void addCallback(String event, Function<JSONObject, Integer> callback) {
@@ -46,7 +50,43 @@ public class Manager {
         }
     }
 
-    private List<String> listTenants() {
+    public void updateAttrs(String deviceId, String tenant, JSONObject attrs, JSONObject metadata) {
+        if (metadata == null) {
+            metadata = new JSONObject();
+        }
+        this.checkCompleteMetaFields(deviceId, tenant, metadata);
+        JSONObject event = new JSONObject();
+        event.put("metadata", metadata);
+        event.put("attrs", attrs);
+        this.mProducer.sendEvent(tenant, Config.getInstance().getIotagentDefaultSubject(), event);
+    }
+
+    public void setOnline(String deviceId, String tenant, Long expireAt) {
+        if (expireAt == null) {
+            expireAt = Instant.now().toEpochMilli();
+        }
+        JSONObject metadata = new JSONObject();
+        this.checkCompleteMetaFields(deviceId, tenant, metadata);
+
+        JSONObject status = new JSONObject();
+        status.put("value", "online");
+        status.put("expires", expireAt);
+
+        metadata.put("status", status);
+
+        JSONObject event = new JSONObject();
+        event.put("metadata", metadata);
+
+        mLogger.debug("Device[" + deviceId + "] for tenant[" + tenant + "] will expire at " + expireAt);
+
+        this.mProducer.sendEvent(tenant, Config.getInstance().getIotagentDefaultSubject(), event);
+    }
+
+    public void setOffline(String deviceId, String tenant) {
+        this.setOnline(deviceId, tenant, null);
+    }
+
+    public List<String> listTenants() {
         List<String> tenants = new ArrayList<>();
 
         StringBuilder url = new StringBuilder(Config.getInstance().getTenancyManagerDefaultManager());
@@ -67,6 +107,89 @@ public class Manager {
         }
 
         return tenants;
+    }
+
+    public List<String> listDevices(String tenant) {
+        List<String> devices = new ArrayList<>();
+
+        StringBuilder url = new StringBuilder(Config.getInstance().getDeviceManagerDefaultManager());
+        url.append("/device?idsOnly");
+        try {
+            HttpResponse<JsonNode> request = Unirest.get(url.toString())
+                    .header("authorization", "Bearer " + Auth.getInstance().getToken(tenant))
+                    .asJson();
+
+            JSONArray jsonResponse = request.getBody().getArray();
+            for (int i = 0; i < jsonResponse.length(); i++) {
+                devices.add(jsonResponse.getString(i));
+            }
+        } catch (UnirestException exception) {
+            mLogger.error("Cannot get url[" + url.toString() + "]");
+            mLogger.error("Failed to acquire existing devices");
+            mLogger.error("Error: " + exception.toString());
+        } catch (JSONException exception) {
+            mLogger.error("Json error: " + exception.toString());
+        }
+
+        return devices;
+    }
+
+    public JSONObject getDevice(String deviceId, String tenant) {
+        String key = this.getCacheKey(tenant, deviceId);
+
+        JSONObject cached = this.mCache.getIfPresent(key);
+        if (cached != null) {
+            mLogger.debug("Device [" + deviceId + "] is already cached for tenant " + tenant);
+            return cached;
+        }
+
+        StringBuilder url = new StringBuilder(Config.getInstance().getDeviceManagerDefaultManager());
+        url.append("/device/");
+        url.append(deviceId);
+        try {
+            HttpResponse<JsonNode> request = Unirest.get(url.toString())
+                    .header("authorization", "Bearer " + Auth.getInstance().getToken(tenant))
+                    .asJson();
+            JSONObject deviceResponse = request.getBody().getObject();
+            this.mCache.put(key, deviceResponse);
+            return deviceResponse;
+        } catch (UnirestException exception) {
+            mLogger.error("Cannot get url[" + url.toString() + "]");
+            mLogger.error("Failed to acquire existing tenancy contexts");
+            mLogger.error("Error: " + exception.toString());
+        } catch (JSONException exception) {
+            mLogger.error("Json error: " + exception.toString());
+        }
+
+        return null;
+    }
+
+    private void checkCompleteMetaFields(String deviceId, String tenant, JSONObject metadata) {
+        if (!metadata.has("deviceid")) {
+            metadata.put("deviceid", deviceId);
+        }
+
+        if (!metadata.has("tenant")) {
+            metadata.put("tenant", tenant);
+        }
+
+        if (!metadata.has("timestamp")) {
+            Long now = Instant.now().toEpochMilli();
+            metadata.put("timestamp", now);
+        }
+
+        if (!metadata.has("templates")) {
+            JSONObject device = getDevice(deviceId, tenant);
+            if (device != null) {
+                try {
+                    metadata.put("templates", device.get("templates"));
+                } catch (JSONException exception) {
+                    mLogger.error("Json error: " + exception);
+                }
+            } else {
+                mLogger.error("Cannot get templates for deviceId: " + deviceId);
+            }
+        }
     }
 
     private Integer on_tenant_message(String message) {
@@ -188,5 +311,9 @@ public class Manager {
         Thread thread = new Thread(internalConsumer);
         thread.start();
         mConsumers.put("internal", thread);
+    }
+
+    private void initProducer() {
+        this.mProducer = new Producer(null);
     }
 }
