@@ -169,7 +169,7 @@ public class Manager {
                         break;
                 }
             } else {
-                JSONArray affected = kafkaEvent.getJSONArray("affected");
+                JSONArray affected = kafkaEvent.getJSONObject("data").getJSONArray("affected");
                 for (int i = 0; i < affected.length(); i++) {
                     String affectedDeviceId = affected.getString(i);
                     mLogger.debug("Updating device cache for " + affectedDeviceId);
