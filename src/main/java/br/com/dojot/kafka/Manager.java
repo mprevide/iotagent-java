@@ -180,7 +180,7 @@ public class Manager {
             if (mCallbacks.containsKey(event)) {
                 List<Function<JSONObject, Integer>> callbackList = mCallbacks.get(event);
                 for (Function<JSONObject, Integer> callback : callbackList) {
-                    callback.apply(dataJson);
+                    callback.apply(kafkaEvent);
                 }
             }
         } catch (JSONException exception) {
