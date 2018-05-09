@@ -101,7 +101,7 @@ public class Services {
         }
 
         StringBuilder url = new StringBuilder(Config.getInstance().getDeviceManagerDefaultManager());
-        url.append("/device/");
+        url.append("/internal/device/");
         url.append(deviceId);
         try {
             HttpResponse<JsonNode> request = Unirest.get(url.toString())
