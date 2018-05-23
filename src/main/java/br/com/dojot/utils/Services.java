@@ -104,12 +104,17 @@ public class Services {
         url.append("/internal/device/");
         url.append(deviceId);
         try {
-            HttpResponse<JsonNode> request = Unirest.get(url.toString())
+            HttpResponse<JsonNode> response = Unirest.get(url.toString())
                     .header("authorization", "Bearer " + Auth.getInstance().getToken(tenant))
                     .asJson();
-            JSONObject deviceResponse = request.getBody().getObject();
-            this.mCache.put(key, deviceResponse);
-            return deviceResponse;
+            if ((response.getStatus() >= 200) && (response.getStatus() < 300)) {
+            	JSONObject deviceResponse = response.getBody().getObject();
+            	this.mCache.put(key, deviceResponse);
+            	return deviceResponse;
+            } else {
+            	mLogger.error("Cannot get device[" + deviceId + "] Response: " + String.valueOf(response.getStatus()));
+            	return null;
+            }
         } catch (UnirestException exception) {
             mLogger.error("Cannot get url[" + url.toString() + "]");
             mLogger.error("Failed to acquire existing tenancy contexts");
