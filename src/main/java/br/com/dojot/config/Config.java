@@ -7,6 +7,7 @@ public class Config {
     private static Config mInstance;
 
     private String mDeviceManagerAddress;
+    private String mImageManagerAddress;
     private String mAuthAddress;
     private String mDataBrokerAddress;
     private String mKafkaAddress;
@@ -24,6 +25,12 @@ public class Config {
             this.mDeviceManagerAddress = System.getenv("DEVM_ADDRESS");
         } else {
             this.mDeviceManagerAddress = "device-manager:5000";
+        }
+
+        if (System.getenv("IMGM_ADDRESS") != null) {
+            this.mImageManagerAddress = System.getenv("IMGM_ADDRESS");
+        } else {
+            this.mImageManagerAddress = "image-manager:5000";
         }
 
         if (System.getenv("AUTH_ADDRESS") != null) {
@@ -68,6 +75,10 @@ public class Config {
 
     public String getDeviceManagerAddress() {
         return this.mDeviceManagerAddress;
+    }
+    
+    public String getImageManagerAddress() {
+        return this.mImageManagerAddress;
     }
 
     public String getAuthAddress() {

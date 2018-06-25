@@ -55,6 +55,7 @@ public class Services {
             for (int i = 0; i < jsonArray.length(); i++) {
                 tenants.add(jsonArray.getString(i));
             }
+            return tenants;
         } catch (UnirestException exception) {
             mLogger.error("Cannot get url[" + url.toString() + "]");
             mLogger.error("Failed to acquire existing tenancy contexts");
@@ -63,7 +64,7 @@ public class Services {
             mLogger.error("Json error: " + exception.toString());
         }
 
-        return tenants;
+        return null;
     }
 
     public List<String> listDevices(String tenant) {
@@ -80,6 +81,7 @@ public class Services {
             for (int i = 0; i < jsonResponse.length(); i++) {
                 devices.add(jsonResponse.getString(i));
             }
+            return devices;
         } catch (UnirestException exception) {
             mLogger.error("Cannot get url[" + url.toString() + "]");
             mLogger.error("Failed to acquire existing devices");
@@ -88,7 +90,7 @@ public class Services {
             mLogger.error("Json error: " + exception.toString());
         }
 
-        return devices;
+        return null;
     }
 
     public JSONObject getDevice(String deviceId, String tenant) {
@@ -101,15 +103,20 @@ public class Services {
         }
 
         StringBuilder url = new StringBuilder(Config.getInstance().getDeviceManagerDefaultManager());
-        url.append("/device/");
+        url.append("/internal/device/");
         url.append(deviceId);
         try {
-            HttpResponse<JsonNode> request = Unirest.get(url.toString())
+            HttpResponse<JsonNode> response = Unirest.get(url.toString())
                     .header("authorization", "Bearer " + Auth.getInstance().getToken(tenant))
                     .asJson();
-            JSONObject deviceResponse = request.getBody().getObject();
-            this.mCache.put(key, deviceResponse);
-            return deviceResponse;
+            if ((response.getStatus() >= 200) && (response.getStatus() < 300)) {
+            	JSONObject deviceResponse = response.getBody().getObject();
+            	this.mCache.put(key, deviceResponse);
+            	return deviceResponse;
+            } else {
+            	mLogger.error("Cannot get device[" + deviceId + "] Response: " + String.valueOf(response.getStatus()));
+            	return null;
+            }
         } catch (UnirestException exception) {
             mLogger.error("Cannot get url[" + url.toString() + "]");
             mLogger.error("Failed to acquire existing tenancy contexts");
