@@ -28,6 +28,13 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -97,8 +104,11 @@
             <version>1.17.1</version>
             <scope>test</scope>
         </dependency>
-
-
+        <dependency>
+            <groupId>com.github.dojot</groupId>
+            <artifactId>dojot-module-java</artifactId>
+            <version>f1ead0443f81f8c9304a45bfbec39bb55fc60f74</version>
+        </dependency>
     </dependencies>
 
 </project>
