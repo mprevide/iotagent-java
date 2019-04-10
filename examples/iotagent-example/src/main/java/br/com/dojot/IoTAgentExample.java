@@ -1,6 +1,6 @@
 package br.com.dojot;
 
-import br.com.dojot.kafka.Manager;
+import br.com.dojot.IoTAgent.Manager;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
@@ -18,8 +18,6 @@ public class IoTAgentExample {
 
         while (true) {
             logger.info("Running IoTAgent Example");
-
-            logger.info(manager.listDevices("admin").toString());
 
             JSONObject eventData = new JSONObject();
 

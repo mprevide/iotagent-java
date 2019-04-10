@@ -1,7 +1,5 @@
 package br.com.dojot.utils;
 
-import br.com.dojot.auth.Auth;
-import br.com.dojot.config.Config;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.mashape.unirest.http.HttpResponse;
@@ -9,12 +7,11 @@ import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import com.cpqd.app.config.Config;
+import com.cpqd.app.auth.Auth;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class Services {
@@ -43,56 +40,6 @@ public class Services {
         this.mCache.invalidate(key);
     }
 
-    public List<String> listTenants() {
-        List<String> tenants = new ArrayList<>();
-
-        StringBuilder url = new StringBuilder(Config.getInstance().getTenancyManagerDefaultManager());
-        url.append("/admin/tenants");
-        try {
-            HttpResponse<JsonNode> request = Unirest.get(url.toString()).asJson();
-            JSONObject jsonResponse = request.getBody().getObject();
-            JSONArray jsonArray = jsonResponse.getJSONArray("tenants");
-            for (int i = 0; i < jsonArray.length(); i++) {
-                tenants.add(jsonArray.getString(i));
-            }
-            return tenants;
-        } catch (UnirestException exception) {
-            mLogger.error("Cannot get url[" + url.toString() + "]");
-            mLogger.error("Failed to acquire existing tenancy contexts");
-            mLogger.error("Error: " + exception.toString());
-        } catch (JSONException exception) {
-            mLogger.error("Json error: " + exception.toString());
-        }
-
-        return null;
-    }
-
-    public List<String> listDevices(String tenant) {
-        List<String> devices = new ArrayList<>();
-
-        StringBuilder url = new StringBuilder(Config.getInstance().getDeviceManagerDefaultManager());
-        url.append("/device?idsOnly");
-        try {
-            HttpResponse<JsonNode> request = Unirest.get(url.toString())
-                    .header("authorization", "Bearer " + Auth.getInstance().getToken(tenant))
-                    .asJson();
-
-            JSONArray jsonResponse = request.getBody().getArray();
-            for (int i = 0; i < jsonResponse.length(); i++) {
-                devices.add(jsonResponse.getString(i));
-            }
-            return devices;
-        } catch (UnirestException exception) {
-            mLogger.error("Cannot get url[" + url.toString() + "]");
-            mLogger.error("Failed to acquire existing devices");
-            mLogger.error("Error: " + exception.toString());
-        } catch (JSONException exception) {
-            mLogger.error("Json error: " + exception.toString());
-        }
-
-        return null;
-    }
-
     public JSONObject getDevice(String deviceId, String tenant) {
         String key = this.getCacheKey(tenant, deviceId);
 
@@ -102,7 +49,7 @@ public class Services {
             return cached;
         }
 
-        StringBuilder url = new StringBuilder(Config.getInstance().getDeviceManagerDefaultManager());
+        StringBuilder url = new StringBuilder(Config.getInstance().getDeviceManagerAddress());
         url.append("/internal/device/");
         url.append(deviceId);
         try {
