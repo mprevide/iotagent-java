@@ -14,10 +14,18 @@ public class IoTAgent {
     private Logger mLogger = Logger.getLogger(IoTAgent.class);
     private Messenger mMessenger;
 
-    public IoTAgent(Long consumerPollTime) {
+    public IoTAgent(Long consumerPollTime) throws Exception {
         this.mMessenger = new Messenger(consumerPollTime);
         mLogger.info("Initializing Messenger for Iotagent-java...");
-        this.mMessenger.init();
+        // The initialization migh fail and exceptions being thrown
+        try {
+            this.mMessenger.init();
+        }
+        // Rethrow
+        catch (Exception ex) {
+            throw ex;
+        }
+
         mLogger.info("... Messenger was successfully initialized.");
         mLogger.info("creating channel...");
         this.mMessenger.createChannel(Config.getInstance().getIotagentDefaultSubject(),"w",false);
