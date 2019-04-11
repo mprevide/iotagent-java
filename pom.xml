@@ -107,7 +107,7 @@
         <dependency>
             <groupId>com.github.dojot</groupId>
             <artifactId>dojot-module-java</artifactId>
-            <version>f1ead0443f81f8c9304a45bfbec39bb55fc60f74</version>
+            <version>6e9cebd903a00e65ac7a9fac00333d769e2fb7a9</version>
         </dependency>
     </dependencies>
 
