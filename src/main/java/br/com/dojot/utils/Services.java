@@ -32,22 +32,23 @@ public class Services {
         return mInstance;
     }
 
-    public synchronized void addDeviceToCache(String key, JSONObject data) {
-        this.mCache.put(key, data);
+    public synchronized void addDeviceToCache(String tenant, String deviceId, JSONObject data) {
+        this.mCache.put(buildCacheKey(tenant, deviceId), data);
     }
 
-    public synchronized void removeDeviceFromCache(String key) {
-        this.mCache.invalidate(key);
+    public synchronized void removeDeviceFromCache(String tenant, String deviceId) {
+        this.mCache.invalidate(buildCacheKey(tenant, deviceId));
     }
 
     public JSONObject getDevice(String deviceId, String tenant) {
-        String key = this.getCacheKey(tenant, deviceId);
+        String key = this.buildCacheKey(tenant, deviceId);
 
         JSONObject cached = this.mCache.getIfPresent(key);
         if (cached != null) {
             mLogger.debug("Device [" + deviceId + "] is already cached for tenant " + tenant);
             return cached;
         }
+        mLogger.debug("Cache miss. Tenant: " + tenant + "Device id: " + deviceId);
 
         StringBuilder url = new StringBuilder(Config.getInstance().getDeviceManagerAddress());
         url.append("/internal/device/");
@@ -75,11 +76,7 @@ public class Services {
         return null;
     }
 
-    public String getCacheKey(String tenant, String deviceId) {
-        StringBuilder response = new StringBuilder("device:");
-        response.append(tenant);
-        response.append(":");
-        response.append(deviceId);
-        return response.toString();
+    private String buildCacheKey(String tenant, String deviceId) {
+        return tenant + ":" + deviceId;
     }
 }
