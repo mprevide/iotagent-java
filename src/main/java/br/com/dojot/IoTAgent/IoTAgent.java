@@ -15,7 +15,7 @@ public class IoTAgent {
     private Messenger mMessenger;
 
     public IoTAgent(Long consumerPollTime) throws Exception {
-        this.mMessenger = new Messenger(consumerPollTime);
+        this.mMessenger = getMessenger(consumerPollTime);
         mLogger.info("Initializing Messenger for Iotagent-java...");
         // The initialization migh fail and exceptions being thrown
         try {
@@ -35,6 +35,10 @@ public class IoTAgent {
             return null;
         });
     }
+
+	public static Messenger getMessenger(Long consumerPollTime) {
+		return new Messenger(consumerPollTime);
+	}
 
     public void generateDeviceCreateEventForActiveDevices(){
         this.mMessenger.generateDeviceCreateEventForActiveDevices();
