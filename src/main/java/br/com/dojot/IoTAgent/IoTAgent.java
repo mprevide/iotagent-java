@@ -1,13 +1,13 @@
 package br.com.dojot.IoTAgent;
 
-import org.json.JSONObject;
-import org.apache.log4j.Logger;
-
 import java.time.Instant;
 import java.util.function.BiFunction;
 
-import com.cpqd.app.messenger.Messenger;
+import org.apache.log4j.Logger;
+import org.json.JSONObject;
+
 import com.cpqd.app.config.Config;
+import com.cpqd.app.messenger.Messenger;
 
 
 public class IoTAgent {
@@ -15,7 +15,7 @@ public class IoTAgent {
     private Messenger mMessenger;
 
     public IoTAgent(Long consumerPollTime) throws Exception {
-        this.mMessenger = new Messenger(consumerPollTime);
+        this.mMessenger = getMessenger(consumerPollTime);
         mLogger.info("Initializing Messenger for Iotagent-java...");
         // The initialization migh fail and exceptions being thrown
         try {
@@ -35,6 +35,10 @@ public class IoTAgent {
             return null;
         });
     }
+
+	public static Messenger getMessenger(Long consumerPollTime) {
+		return new Messenger(consumerPollTime);
+	}
 
     public void generateDeviceCreateEventForActiveDevices(){
         this.mMessenger.generateDeviceCreateEventForActiveDevices();
@@ -58,6 +62,24 @@ public class IoTAgent {
         event.put("attrs", attrs);
         this.mMessenger.publish(Config.getInstance().getIotagentDefaultSubject(), tenant, event.toString());
     }
+    
+	/**
+	 * Publish device status, it can be online or offline.
+	 *
+	 * @param deviceId device to be updated
+	 * @param tenant   tenant from which device is to be updated
+	 * @param status   custom status structure
+	 */
+	public void publishStatus(String deviceId, String tenant, JSONObject status) {
+
+		JSONObject metadata = new JSONObject();
+		checkCompleteMetaFields(deviceId, tenant, metadata);
+
+		metadata.put("status", status);
+		this.mMessenger.publish(Config.getInstance().getIotagentDefaultSubject(), tenant,
+				new JSONObject().put("metadata", metadata).toString());
+
+	}
 
     private void checkCompleteMetaFields(String deviceId, String tenant, JSONObject metadata) {
         if (!metadata.has("deviceid")) {
