@@ -3,7 +3,9 @@ package br.com.dojot.IoTAgent;
 import org.json.JSONObject;
 import org.apache.log4j.Logger;
 
+import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Calendar;
 import java.util.function.BiFunction;
 
 import com.cpqd.app.messenger.Messenger;
@@ -58,6 +60,24 @@ public class IoTAgent {
         event.put("attrs", attrs);
         this.mMessenger.publish(Config.getInstance().getIotagentDefaultSubject(), tenant, event.toString());
     }
+    
+	/**
+	 * Publish device status, it can be online or offline.
+	 *
+	 * @param deviceId device to be updated
+	 * @param tenant   tenant from which device is to be updated
+	 * @param status   custom status structure
+	 */
+	public void publishStatus(String deviceId, String tenant, JSONObject status) {
+
+		JSONObject metadata = new JSONObject();
+		checkCompleteMetaFields(deviceId, tenant, metadata);
+
+		metadata.put("status", status);
+		this.mMessenger.publish(Config.getInstance().getIotagentDefaultSubject(), tenant,
+				new JSONObject().put("metadata", metadata).toString());
+
+	}
 
     private void checkCompleteMetaFields(String deviceId, String tenant, JSONObject metadata) {
         if (!metadata.has("deviceid")) {
