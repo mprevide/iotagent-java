@@ -1,4 +1,4 @@
-name: dojot-module-java
+name: iotagent-java
 
 # Triggered after a branch is created, a tag or a branch is pushed or a PR
 on:
@@ -20,6 +20,6 @@ jobs:
         distribution: 'zulu'
         java-version: '8'
     - name: Build with Maven
-      run: mvn --batch-mode --update-snapshots verify
+      run: mvn --batch-mode  --update-snapshots verify -e -X
     - name: Run test
       run: mvn test

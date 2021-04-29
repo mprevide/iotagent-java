@@ -6,10 +6,10 @@
 
     <groupId>com.github.dojot</groupId>
     <artifactId>iotagent-java</artifactId>
-    <version>1.1.0</version>
+    <version>2.0.0</version>
 
     <name>IoT Agent Java</name>
-    <url>https://github.com/dojot/iotagent-java</url>
+    <url>https://github.com/mprevide/iotagent-java</url>
 
     <licenses>
       <license>
@@ -24,7 +24,7 @@
             <plugin>
                 <groupId>com.github.dojot</groupId>
                 <artifactId>iotagent-java</artifactId>
-                <version>1.1.0</version>
+                <version>2.0.0</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -130,7 +130,7 @@
         <dependency>
             <groupId>com.github.dojot</groupId>
             <artifactId>dojot-module-java</artifactId>
-            <version>1.1.0</version>
+            <version>2.0.0</version>
         </dependency>
     </dependencies>
 
