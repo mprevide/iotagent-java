@@ -1,4 +1,4 @@
-name: dojot-module-java
+name: iotagent-java
 
 # Triggered after a branch is created, a tag or a branch is pushed or a PR
 on:
