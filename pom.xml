@@ -130,7 +130,7 @@
         <dependency>
             <groupId>com.github.mprevide</groupId>
             <artifactId>dojot-module-java</artifactId>
-            <version>keycloak</version>
+            <version>keycloak-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
