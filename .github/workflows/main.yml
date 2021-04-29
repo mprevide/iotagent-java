@@ -18,8 +18,8 @@ jobs:
     - uses: actions/setup-java@v2
       with:
         distribution: 'zulu'
-        java-version: '8'
+        java-version: '8' #--update-snapshots
     - name: Build with Maven
-      run: mvn --batch-mode --update-snapshots verify
+      run: mvn --batch-mode  verify -e -X
     - name: Run test
       run: mvn test
